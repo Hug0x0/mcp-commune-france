@@ -1,0 +1,58 @@
+{
+  "name": "mcp-commune-france",
+  "version": "0.1.0",
+  "description": "MCP server for French commune intelligence: geo.api.gouv.fr, postal codes, departments, regions, and dataset discovery.",
+  "type": "module",
+  "bin": {
+    "mcp-commune-france": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "postbuild": "chmod +x dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run",
+    "test:smoke": "node scripts/smoke-test.mjs",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "mcp",
+    "open-data",
+    "france",
+    "commune",
+    "france",
+    "geo-api",
+    "insee",
+    "postal-code"
+  ],
+  "author": "Hug0x0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hug0x0/mcp-commune-france.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hug0x0/mcp-commune-france/issues"
+  },
+  "homepage": "https://github.com/Hug0x0/mcp-commune-france#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "tsx": "^4.20.4",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
