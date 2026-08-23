@@ -226,6 +226,39 @@ server.tool('commune_france_geocode_address', 'Geocode a French address with the
   }
 });
 
+server.tool('commune_france_address_profile', 'Resolve an address to its most likely commune, then return the geo.api commune profile and suggested public-data queries.', {
+  address: z.string().describe('Address or place query.'),
+}, async ({ address }) => {
+  try {
+    const geocodeUrl = new URL('https://api-adresse.data.gouv.fr/search/');
+    geocodeUrl.searchParams.set('q', address);
+    geocodeUrl.searchParams.set('limit', '1');
+    const geocode = await fetchJson<{ features?: Array<Record<string, unknown>> }>(geocodeUrl.toString());
+    const first = geocode.features?.[0];
+    const properties = first?.properties && typeof first.properties === 'object'
+      ? first.properties as Record<string, unknown>
+      : undefined;
+    const citycode = properties?.citycode;
+    if (typeof citycode !== 'string') {
+      return errorResult('Address could not be resolved to a commune code');
+    }
+
+    const commune = await fetchJson<Record<string, unknown>>(`https://geo.api.gouv.fr/communes/${citycode}?fields=nom,code,codesPostaux,departement,region,population,centre&format=json`);
+    return jsonResult({
+      address,
+      geocode_match: {
+        label: properties?.label,
+        score: properties?.score,
+        geometry: first?.geometry,
+      },
+      commune,
+      suggested_queries: [`population ${commune.nom}`, `écoles ${commune.nom}`, `risques ${commune.nom}`, `SIRENE ${commune.nom}`, `marchés publics ${commune.nom}`],
+    });
+  } catch (error) {
+    return errorResult(error instanceof Error ? error.message : 'Failed to build address profile');
+  }
+});
+
 
 async function main(): Promise<void> {
   await server.connect(new StdioServerTransport());
