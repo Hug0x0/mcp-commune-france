@@ -6,6 +6,8 @@ MCP server for French commune intelligence: geo.api.gouv.fr, postal codes, depar
 
 Run the MCP and call `commune_france_get_sources` first to inspect source coverage. This server also exposes domain-specific tools for the topic described above.
 
+Includes commune resolution, department commune lists, commune profiles, and BAN address geocoding.
+
 ## Install
 
 ```bash

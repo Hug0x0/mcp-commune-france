@@ -192,6 +192,40 @@ server.tool('commune_france_profile', 'Build a source-oriented commune profile w
   } catch (error) { return errorResult(error instanceof Error ? error.message : 'Failed to build commune profile'); }
 });
 
+server.tool('commune_france_geocode_address', 'Geocode a French address with the Base Adresse Nationale API and return commune identifiers when available.', {
+  address: z.string().describe('Address query, e.g. "20 avenue de Ségur Paris" or "rue de Paris Saint-Denis".'),
+  limit: z.number().int().min(1).max(10).default(5),
+}, async ({ address, limit }) => {
+  try {
+    const url = new URL('https://api-adresse.data.gouv.fr/search/');
+    url.searchParams.set('q', address);
+    url.searchParams.set('limit', String(limit));
+    const data = await fetchJson<{ features?: Array<Record<string, unknown>> }>(url.toString());
+    return jsonResult({
+      address,
+      source: url.toString(),
+      matches: (data.features ?? []).map((feature) => {
+        const properties = feature.properties && typeof feature.properties === 'object'
+          ? feature.properties as Record<string, unknown>
+          : {};
+        return {
+          label: properties.label,
+          score: properties.score,
+          type: properties.type,
+          name: properties.name,
+          postcode: properties.postcode,
+          city: properties.city,
+          citycode: properties.citycode,
+          context: properties.context,
+          geometry: feature.geometry,
+        };
+      }),
+    });
+  } catch (error) {
+    return errorResult(error instanceof Error ? error.message : 'Failed to geocode address');
+  }
+});
+
 
 async function main(): Promise<void> {
   await server.connect(new StdioServerTransport());
